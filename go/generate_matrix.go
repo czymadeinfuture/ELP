@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// generateMatrix 生成一个m x n的矩阵，每个元素是1到100的随机数
+// generate a matrix m x n, in which each element is from 0-100
 func generateMatrix(m, n int) [][]int {
 	matrix := make([][]int, m)
 	for i := 0; i < m; i++ {
@@ -20,7 +20,7 @@ func generateMatrix(m, n int) [][]int {
 	return matrix
 }
 
-// saveMatrixToFile 将矩阵保存到文本文件
+// save Matrix to txtfile 
 func saveMatrixToFile(matrix [][]int, filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -39,7 +39,7 @@ func saveMatrixToFile(matrix [][]int, filename string) error {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano()) // 初始化随机数生成器
+	rand.Seed(time.Now().UnixNano()) 
 
 	var m, n int
 	fmt.Print("Enter the number of rows (m): ")
@@ -56,3 +56,4 @@ func main() {
 	}
 	fmt.Println("Matrix saved to", filename)
 }
+
