@@ -72,7 +72,7 @@ func strassen(A, B [][]int) [][]int {
 	A11, A12, A21, A22 := splitMatrix(A, newSize)
 	B11, B12, B21, B22 := splitMatrix(B, newSize)
 
-	// calculate 7 products using Strassen's formula
+	// calculate 7 submatrices
 	M1 := strassen(addMatrix(A11, A22), addMatrix(B11, B22))
 	M2 := strassen(addMatrix(A21, A22), B11)
 	M3 := strassen(A11, subtractMatrix(B12, B22))
@@ -81,7 +81,7 @@ func strassen(A, B [][]int) [][]int {
 	M6 := strassen(subtractMatrix(A21, A11), addMatrix(B11, B12))
 	M7 := strassen(subtractMatrix(A12, A22), addMatrix(B21, B22))
 
-	// combine the four submatrices into the final result
+	// combine the four submatrices 
 	return combineMatrices(M1, M2, M3, M4, M5, M6, M7, newSize)
 }
 
@@ -108,7 +108,7 @@ func splitMatrix(A [][]int, newSize int) ([][]int, [][]int, [][]int, [][]int) {
 	return A11, A12, A21, A22
 }
 
-// combines the results of the Strassen algorithm into a single matrix
+// combines the results into a single matrix
 func combineMatrices(M1, M2, M3, M4, M5, M6, M7 [][]int, newSize int) [][]int {
 	n := newSize * 2
 	C := make([][]int, n)
