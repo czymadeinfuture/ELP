@@ -48,7 +48,11 @@ func main() {
 	fmt.Scan(&n)
 
 	matrix := generateMatrix(m, n)
-	filename := "matrix.txt"
+	
+	var filename string
+	fmt.Print("Enter the filename to save the matrix: ")
+	fmt.Scan(&filename)
+	
 	err := saveMatrixToFile(matrix, filename)
 	if err != nil {
 		fmt.Println("Error saving matrix to file:", err)
