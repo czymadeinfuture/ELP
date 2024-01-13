@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// Connect to the server
-	conn, err := net.Dial("tcp", "localhost:8080")
+	conn, err := net.Dial("tcp", "192.168.0.101:20000")
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -15,8 +15,10 @@ func main() {
 	defer conn.Close()
 
 	// Send data to the server
-	// ...
-
-	// Read and process data from the server
-	// ...
+	data := []byte("Hello, Server!")
+	_, err = conn.Write(data)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
 }
