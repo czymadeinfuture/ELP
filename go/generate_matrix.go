@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"time"
+	// "strings"
+	// "time"
 )
 
 // generate a matrix m x n, in which each element is from 0-100
@@ -20,7 +21,7 @@ func generateMatrix(m, n int) [][]int {
 	return matrix
 }
 
-// save Matrix to txtfile 
+// save Matrix to txtfile
 func saveMatrixToFile(matrix [][]int, filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -38,26 +39,25 @@ func saveMatrixToFile(matrix [][]int, filename string) error {
 	return writer.Flush()
 }
 
-func main() {
-	rand.Seed(time.Now().UnixNano()) 
+// func main() {
+// 	rand.Seed(time.Now().UnixNano())
 
-	var m, n int
-	fmt.Print("Enter the number of rows (m): ")
-	fmt.Scan(&m)
-	fmt.Print("Enter the number of columns (n): ")
-	fmt.Scan(&n)
+// 	var m, n int
+// 	fmt.Print("Enter the number of rows (m): ")
+// 	fmt.Scan(&m)
+// 	fmt.Print("Enter the number of columns (n): ")
+// 	fmt.Scan(&n)
 
-	matrix := generateMatrix(m, n)
-	
-	var filename string
-	fmt.Print("Enter the filename to save the matrix: ")
-	fmt.Scan(&filename)
-	
-	err := saveMatrixToFile(matrix, filename)
-	if err != nil {
-		fmt.Println("Error saving matrix to file:", err)
-		return
-	}
-	fmt.Println("Matrix saved to", filename)
-}
+// 	matrix := generateMatrix(m, n)
 
+// 	var filename string
+// 	fmt.Print("Enter the filename to save the matrix: ")
+// 	fmt.Scan(&filename)
+
+// 	err := saveMatrixToFile(matrix, filename)
+// 	if err != nil {
+// 		fmt.Println("Error saving matrix to file:", err)
+// 		return
+// 	}
+// 	fmt.Println("Matrix saved to", filename)
+// }

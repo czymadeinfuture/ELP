@@ -3,30 +3,61 @@ package main
 import (
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
 )
 
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	// Create a buffer to read data into
 	buffer := make([]byte, 1024)
-
-	for {
-		// Read data from the client
-		n, err := conn.Read(buffer)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-
-		// Process and use the data (here, we'll just print it)
-		fmt.Printf("Received: %s\n", buffer[:n])
+	n, err := conn.Read(buffer)
+	if err != nil {
+		fmt.Println("Error reading from client:", err)
+		return
 	}
+
+	matrixSize, err := strconv.Atoi(strings.TrimSpace(string(buffer[:n])))
+	if err != nil {
+		fmt.Println("Error converting data to integer:", err)
+		return
+	}
+
+	// Generate two matrices
+	matrix1 := generateMatrix(matrixSize, matrixSize)
+	matrix2 := generateMatrix(matrixSize, matrixSize)
+
+	// Perform matrix multiplication
+	resultMatrix := strassen(matrix1, matrix2)
+
+	// Serialize and send the matrices
+	sendMatrix(conn, matrix1)
+	sendMatrix(conn, matrix2)
+	sendMatrix(conn, resultMatrix)
+}
+
+func sendMatrix(conn net.Conn, matrix [][]int) {
+	matrixStr := matrixToString(matrix) + "\n---\n"
+	_, err := conn.Write([]byte(matrixStr))
+	if err != nil {
+		fmt.Println("Error sending matrix to client:", err)
+	}
+}
+
+func matrixToString(matrix [][]int) string {
+	var sb strings.Builder
+	for _, row := range matrix {
+		for _, val := range row {
+			sb.WriteString(fmt.Sprintf("%d ", val))
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
 }
 
 func main() {
 	// Listen for incoming connections
-	listener, err := net.Listen("tcp", "192.168.0.101:20000")
+	listener, err := net.Listen("tcp", "192.168.0.101:20000") // LOCAL IP ADDRESS
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

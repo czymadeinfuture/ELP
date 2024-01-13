@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// read matrixs from a txt file 
+// read matrixs from a txt file
 func readMatrixFromFile(filename string) [][]int {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -60,7 +60,7 @@ func subtractMatrix(A, B [][]int) [][]int {
 	return C
 }
 
-//  Strassen's algorithm for matrix multiplication
+// Strassen's algorithm for matrix multiplication
 func strassen(A, B [][]int) [][]int {
 	n := len(A)
 	if n == 1 {
@@ -81,7 +81,7 @@ func strassen(A, B [][]int) [][]int {
 	M6 := strassen(subtractMatrix(A21, A11), addMatrix(B11, B12))
 	M7 := strassen(subtractMatrix(A12, A22), addMatrix(B21, B22))
 
-	// combine the four submatrices 
+	// combine the four submatrices
 	return combineMatrices(M1, M2, M3, M4, M5, M6, M7, newSize)
 }
 
@@ -130,21 +130,21 @@ func combineMatrices(M1, M2, M3, M4, M5, M6, M7 [][]int, newSize int) [][]int {
 	return C
 }
 
-func main() {
-	// read txt files
-	matrix1 := readMatrixFromFile("test1.txt")
-	matrix2 := readMatrixFromFile("test2.txt")
+// func main() {
+// 	// read txt files
+// 	matrix1 := readMatrixFromFile("test1.txt")
+// 	matrix2 := readMatrixFromFile("test2.txt")
 
-	if matrix1 == nil || matrix2 == nil {
-		fmt.Println("Failed to read one or both matrices.")
-		return
-	}
+// 	if matrix1 == nil || matrix2 == nil {
+// 		fmt.Println("Failed to read one or both matrices.")
+// 		return
+// 	}
 
-	result := strassen(matrix1, matrix2)
+// 	result := strassen(matrix1, matrix2)
 
-	// Print the result
-	fmt.Println("Result:")
-	for _, row := range result {
-		fmt.Println(row)
-	}
-}
+// 	// Print the result
+// 	fmt.Println("Result:")
+// 	for _, row := range result {
+// 		fmt.Println(row)
+// 	}
+// }
