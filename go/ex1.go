@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"sync"
 )
 
@@ -30,20 +30,20 @@ func matrixMultiply(a, b [][]float64) [][]float64 {
 	return result
 }
 
-func main() {
-	// 初始化两个矩阵
-	a := [][]float64{
-		{1, 2},
-		{3, 4},
-	}
-	b := [][]float64{
-		{2, 0},
-		{1, 2},
-	}
+// func main() {
+// 	// 初始化两个矩阵
+// 	a := [][]float64{
+// 		{1, 2},
+// 		{3, 4},
+// 	}
+// 	b := [][]float64{
+// 		{2, 0},
+// 		{1, 2},
+// 	}
 
-	// 矩阵乘法
-	result := matrixMultiply(a, b)
+// 	// 矩阵乘法
+// 	result := matrixMultiply(a, b)
 
-	// 打印结果
-	fmt.Println(result)
-}
+// 	// 打印结果
+// 	fmt.Println(result)
+// }
