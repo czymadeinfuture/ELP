@@ -3,14 +3,14 @@
 Le projet ELP est composé de trois sous-projets, qui sont respectivement Golang, Elm et JavaScript. Pour une meilleure organisation et maintenance, nous avons placé le code de chaque langage de programmation dans des dossiers séparés.
 
 ## Table of Contents
-1. [Partie Golang](#partie-golang)
-2. [Partie Elm](#partie-elm)
-3. [Partie JavaScript](#partie-javascript)
+1. [Projet Golang](#partie-golang)
+2. [Projet Elm](#partie-elm)
+3. [Projet JavaScript](#partie-javascript)
 
 ## Structure du Projet
-- **Partie Golang :** Utilisation de goroutines pour calculer de grandes matrices de multiplication
-- **Partie Elm :** Intégrer dans une page web une fonctionnalité qui sélectionne aléatoirement des mots d'un dictionnaire, affiche leurs définitions, et invite les utilisateurs à deviner les mots correspondants.
-- **Partie JavaScript :** coming soon
+- **Projet Golang :** Utilisation de goroutines pour calculer de grandes matrices de multiplication
+- **Projet Elm :** Intégrer dans une page web une fonctionnalité qui sélectionne aléatoirement des mots d'un dictionnaire, affiche leurs définitions, et invite les utilisateurs à deviner les mots correspondants.
+- **Projet JavaScript :** coming soon
 
 ## Projet Go
 
