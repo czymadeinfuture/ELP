@@ -67,3 +67,5 @@ Ici, le mot-clé `go` est utilisé pour démarrer une nouvelle goroutine. `wg.Do
 Afin d'augmenter la tolérance aux pannes et la vitesse du programme, nous limitons les calculs de strassen et de goroutine à deux fois, c'est-à-dire découper une matrice en 16 morceaux, puis utiliser les opérations normales de multiplication matricielle. De cette manière, l'implémentation de l'algorithme de Strassen tire parti des avantages de l'exécution concurrente, permettant un calcul matriciel plus efficace. Cela est particulièrement utile pour le traitement de grandes matrices, car cela peut réduire considérablement le temps de calcul.
 
 ## V.Fonctionnement du protocole TCP
+
+## VI.Orientations d'amélioration
