@@ -6,7 +6,7 @@ L'algorithme de Strassen est une méthode efficace pour la multiplication de mat
 . L'algorithme de Strassen réduit le nombre de multiplications à environ $n^2.81$ en décomposant la matrice en sous-matrices plus petites et en appliquant des opérations spécifiques d'addition et de soustraction, ainsi qu'un nombre réduit de multiplications.
 Bien que l'algorithme de Strassen puisse théoriquement accélérer la multiplication des matrices, sa nature récursive et les opérations complexes d'addition et de soustraction peuvent rendre ses performances inférieures à celles des méthodes traditionnelles pour les petites matrices. Par conséquent, il est principalement utilisé pour les matrices de grande taille.
 
-#II.Comment utiliser
+#II.Comment utiliser\n
 **Avant utilisation, vous devez vous assurer des choses suivantes :**
 1. Le programme go est installé sur votre ordinateur
 2. Vous êtes déjà connecté à Internet et l'adresse ipv4 du programme doit être remplacée par l'adresse ipv4 de votre réseau.
