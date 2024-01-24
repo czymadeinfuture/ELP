@@ -26,7 +26,7 @@ Entrez un multiple de 4 et le programme renverra deux matrices aléatoires de ce
 Généralement très rapide !  
 
 ## III.principes fondamentaux
-1. **Division de la matrice** : Chaque matrice \( n \times n \) est divisée en quatre sous-matrices \( n/2 \times n/2 \). Cela signifie que chaque matrice originale A et B est divisée en A11, A12, A21, A22 et B11, B12, B21, B22.  
+1. **Division de la matrice** : Chaque matrice $n \times n$ est divisée en quatre sous-matrices $(n\2) \times (n\2)$. Cela signifie que chaque matrice originale A et B est divisée en A11, A12, A21, A22 et B11, B12, B21, B22.  
 2. **Création de 7 nouvelles matrices** : Ces matrices sont les produits des sommes ou des différences des sous-matrices originales. L'algorithme calcule les sept matrices suivantes :  
    - \( M1 = (A11 + A22) \times (B11 + B22) \)
    - \( M2 = (A21 + A22) \times B11 \)
