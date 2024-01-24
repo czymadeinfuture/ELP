@@ -12,7 +12,7 @@ Le projet ELP est composé de trois sous-projets, qui sont respectivement Golang
 - **Projet Elm :** Intégrer dans une page web une fonctionnalité qui sélectionne aléatoirement des mots d'un dictionnaire, affiche leurs définitions, et invite les utilisateurs à deviner les mots correspondants.
 - **Projet JavaScript :** coming soon
 
-## Projet Go
+## Projet Golang
 
 ### multiplication matricielle à grande échelle
 
