@@ -45,5 +45,25 @@ Généralement très rapide !
 4. **Application récursive** : Sur cette base, Python peut également garantir ses opérations récursives pour augmenter la vitesse de l'algorithme.
 
 ## IV.Accélération goroutine et ses effets
+### Qu'est-ce qu'une Goroutine ?
+
+Dans le langage de programmation Go, une goroutine est un fil d'exécution léger géré par le runtime de Go. Les goroutines sont au cœur de la programmation concurrente en Go. Comparées aux threads traditionnels, les goroutines sont plus efficaces en termes d'utilisation et de gestion, principalement parce qu'elles utilisent moins de mémoire et que le coût de commutation entre les threads du système d'exploitation est plus faible.
+
+### Application dans le Code Précédent
+
+Dans notre implémentation de l'algorithme de Strassen, les goroutines sont utilisées pour calculer parallèlement plusieurs parties de la matrice. Cela est réalisé en créant une goroutine différente pour chaque opération matricielle indépendante. Plus précisément, la partie clé de l'algorithme consiste à calculer 7 produits matriciels (marqués M1, M2, ..., M7), qui sont au cœur de l'algorithme de Strassen.
+
+Dans le code, chacun de ces produits est calculé dans une goroutine séparée. Par exemple :
+
+```go
+go func() {
+    defer wg.Done()
+    results[0] = last_strassen(addMatrix(A11, A22), addMatrix(B11, B22)) 
+}()
+```
+
+Ici, le mot-clé `go` est utilisé pour démarrer une nouvelle goroutine. `wg.Done()` est utilisé pour notifier un groupe d'attente (`sync.WaitGroup`) qu'une opération est terminée, ce qui est un moyen de coordonner la fin de l'exécution des différentes goroutines. Une fois que toutes les goroutines ont terminé leurs calculs, le programme principal continue et combine ces résultats pour former la matrice de produit final.
+
+Afin d'augmenter la tolérance aux pannes et la vitesse du programme, nous limitons les calculs de strassen et de goroutine à deux fois, c'est-à-dire découper une matrice en 16 morceaux, puis utiliser les opérations normales de multiplication matricielle. De cette manière, l'implémentation de l'algorithme de Strassen tire parti des avantages de l'exécution concurrente, permettant un calcul matriciel plus efficace. Cela est particulièrement utile pour le traitement de grandes matrices, car cela peut réduire considérablement le temps de calcul.
 
 ## V.Fonctionnement du protocole TCP
