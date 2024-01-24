@@ -37,10 +37,10 @@ Généralement très rapide !
    -  M7 = $(A12 - A22) \times (B21 + B22)$ 
 
 3. **Construction de la matrice finale à partir de M1 à M7** : Les quatre sous-matrices C11, C12, C21, C22 de la matrice résultante C sont calculées à partir de M1 à M7. Par exemple :  
-   - \( C11 = M1 + M4 - M5 + M7 \)
-   - \( C12 = M3 + M5 \)
-   - \( C21 = M2 + M4 \)
-   - \( C22 = M1 - M2 + M3 + M6 \)
+   - C11 = M1 + M4 - M5 + M7 
+   - C12 = M3 + M5 
+   - C21 = M2 + M4 
+   - C22 = M1 - M2 + M3 + M6 
 
 4. **Application récursive** : Sur cette base, Python peut également garantir ses opérations récursives pour augmenter la vitesse de l'algorithme.
 
