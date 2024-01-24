@@ -46,7 +46,7 @@ func strassen(A, B [][]int) [][]int {
 	var wg sync.WaitGroup
 
 	results := make([][][]int, 7)
-	wg.Add(7) // 因为有七个矩阵乘法操作
+	wg.Add(7) // 
 	go func() {
 		defer wg.Done()
 		results[0] = last_strassen(addMatrix(A11, A22), addMatrix(B11, B22)) // M1
@@ -75,7 +75,7 @@ func strassen(A, B [][]int) [][]int {
 		defer wg.Done()
 		results[6] = last_strassen(subtractMatrix(A12, A22), addMatrix(B21, B22)) // M7
 	}()
-	wg.Wait() // 等待所有 goroutine 完成
+	wg.Wait() // wait for the end
 
 	// etape3:combine the four submatrices into the final result
 	return combineMatrices(results, newSize)
@@ -96,7 +96,7 @@ func last_strassen(A, B [][]int) [][]int {
 	var wg sync.WaitGroup
 
 	results := make([][][]int, 7)
-	wg.Add(7) // 因为有七个矩阵乘法操作
+	wg.Add(7) // 
 	go func() {
 		defer wg.Done()
 		results[0] = MatrixMultiply(addMatrix(A11, A22), addMatrix(B11, B22)) // M1
@@ -132,9 +132,9 @@ func last_strassen(A, B [][]int) [][]int {
 }
 
 func MatrixMultiply(a, b [][]int) [][]int {
-	// 获取矩阵的维度
+	// get the dimension of the matrix
 	n := len(a)
-	// 创建结果矩阵
+	// creat the result
 	result := make([][]int, n)
 	for i := range result {
 		result[i] = make([]int, n)
