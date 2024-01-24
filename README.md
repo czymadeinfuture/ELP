@@ -126,4 +126,3 @@ defer conn.Close()
 Une fois la communication terminée, la connexion est fermée des deux côtés pour libérer les ressources réseau
 
 
-### VI.Orientations d'amélioration
