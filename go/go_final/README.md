@@ -25,7 +25,24 @@ go run TCP_client.go
 Entrez un multiple de 4 et le programme renverra deux matrices aléatoires de ce nombre et leur produit.  
 Généralement très rapide !  
 
-## II.principes fondamentaux
+## III.principes fondamentaux
+1. **Division de la matrice** : Chaque matrice \( n \times n \) est divisée en quatre sous-matrices \( n/2 \times n/2 \). Cela signifie que chaque matrice originale A et B est divisée en A11, A12, A21, A22 et B11, B12, B21, B22.  
+2. **Création de 7 nouvelles matrices** : Ces matrices sont les produits des sommes ou des différences des sous-matrices originales. L'algorithme calcule les sept matrices suivantes :  
+   - \( M1 = (A11 + A22) \times (B11 + B22) \)
+   - \( M2 = (A21 + A22) \times B11 \)
+   - \( M3 = A11 \times (B12 - B22) \)
+   - \( M4 = A22 \times (B21 - B11) \)
+   - \( M5 = (A11 + A12) \times B22 \)
+   - \( M6 = (A21 - A11) \times (B11 + B12) \)
+   - \( M7 = (A12 - A22) \times (B21 + B22) \)
+
+3. **Construction de la matrice finale à partir de M1 à M7** : Les quatre sous-matrices C11, C12, C21, C22 de la matrice résultante C sont calculées à partir de M1 à M7. Par exemple :  
+   - \( C11 = M1 + M4 - M5 + M7 \)
+   - \( C12 = M3 + M5 \)
+   - \( C21 = M2 + M4 \)
+   - \( C22 = M1 - M2 + M3 + M6 \)
+
+4. **Application récursive** : Sur cette base, Python peut également garantir ses opérations récursives pour augmenter la vitesse de l'algorithme.
 
 ## IV.Accélération goroutine et ses effets
 
