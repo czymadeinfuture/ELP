@@ -124,7 +124,7 @@ sendMatrix(conn, resultMatrix)
 ```
 Le serveur envoie les matrices générées et le résultat de la multiplication au client.
 
-#### Clôture de la Connexion :**
+#### Clôture de la Connexion :
 ```go
 defer conn.Close()
 ```
