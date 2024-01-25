@@ -16,12 +16,12 @@ Le projet ELP est composé de trois sous-projets, qui sont respectivement Golang
 
 ### multiplication matricielle à grande échelle
 
-### I.Description du projet
+### I. Description du projet
 L'algorithme de Strassen est une méthode efficace pour la multiplication de matrices, proposée par Volker Strassen en 1969. Cet algorithme est parfois plus performant que la méthode traditionnelle de multiplication matricielle.  
 La méthode traditionnelle nécessite $n^3$ multiplications pour deux matrices de taille $n \times n$. L'algorithme de Strassen réduit le nombre de multiplications à environ $n^2.81$ en décomposant la matrice en sous-matrices plus petites et en appliquant des opérations spécifiques d'addition et de soustraction, ainsi qu'un nombre réduit de multiplications.  
 Bien que l'algorithme de Strassen puisse théoriquement accélérer la multiplication des matrices, sa nature récursive et les opérations complexes d'addition et de soustraction peuvent rendre ses performances inférieures à celles des méthodes traditionnelles pour les petites matrices. Par conséquent, il est principalement utilisé pour les matrices de grande taille.  
 
-### II.Comment utiliser
+### II. Comment utiliser
 **Avant utilisation, vous devez vous assurer des choses suivantes :**  
 1. Le programme go est installé sur votre ordinateur  
 2. Vous êtes déjà connecté à Internet et l'adresse ipv4 du programme doit être remplacée par l'adresse ipv4 de votre réseau.  
@@ -39,7 +39,7 @@ go run TCP_client.go
 Entrez un multiple de 4 et le programme renverra deux matrices aléatoires de ce nombre et leur produit.  
 Généralement très rapide !  
 
-### III.principes fondamentaux
+### III. principes fondamentaux
 1. **Division de la matrice** : Chaque matrice $n \times n$ est divisée en quatre sous-matrices $(n\2) \times (n\2)$. Cela signifie que chaque matrice originale A et B est divisée en A11, A12, A21, A22 et B11, B12, B21, B22.  
 2. **Création de 7 nouvelles matrices** : Ces matrices sont les produits des sommes ou des différences des sous-matrices originales. L'algorithme calcule les sept matrices suivantes :  
    -  M1 = $(A11 + A22) \times (B11 + B22)$ 
@@ -58,7 +58,7 @@ Généralement très rapide !
 
 4. **Application récursive** : Sur cette base, Python peut également garantir ses opérations récursives pour augmenter la vitesse de l'algorithme.
 
-### IV.Accélération goroutine et ses effets
+### IV. Accélération goroutine et ses effets
 #### Qu'est-ce qu'une Goroutine ?
 
 Dans le langage de programmation Go, une goroutine est un fil d'exécution léger géré par le runtime de Go. Les goroutines sont au cœur de la programmation concurrente en Go. Comparées aux threads traditionnels, les goroutines sont plus efficaces en termes d'utilisation et de gestion, principalement parce qu'elles utilisent moins de mémoire et que le coût de commutation entre les threads du système d'exploitation est plus faible.
@@ -80,7 +80,7 @@ Ici, le mot-clé `go` est utilisé pour démarrer une nouvelle goroutine. `wg.Do
 
 Afin d'augmenter la tolérance aux pannes et la vitesse du programme, nous limitons les calculs de strassen et de goroutine à deux fois, c'est-à-dire découper une matrice en 16 morceaux, puis utiliser les opérations normales de multiplication matricielle. De cette manière, l'implémentation de l'algorithme de Strassen tire parti des avantages de l'exécution concurrente, permettant un calcul matriciel plus efficace. Cela est particulièrement utile pour le traitement de grandes matrices, car cela peut réduire considérablement le temps de calcul.
 
-### V.Fonctionnement du protocole TCP
+### V. Fonctionnement du protocole TCP
 Le protocole TCP (Transmission Control Protocol) est un protocole de communication fiable, ordonné et sans perte utilisé fréquemment dans les applications réseau. 
 
 Dans cette application TCP, le client transmet la dimension d'une matrice au serveur. Le serveur, après réception, crée des matrices correspondantes de manière aléatoire, réalise leur multiplication et renvoie ensuite le résultat au client pour affichage.
