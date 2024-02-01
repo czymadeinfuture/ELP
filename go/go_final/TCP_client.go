@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "192.168.43.215:20000")
+	conn, err := net.Dial("tcp", "192.168.0.101:20000")
 	//Il faut modifier l'ip adresse lors utilisation
 	if err != nil {
 		fmt.Println("Error:", err)

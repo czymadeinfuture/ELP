@@ -85,7 +85,7 @@ func readMatrixFromFile(filename string) [][]int {
 
 func main() {
 	// Listen for incoming connections
-	listener, err := net.Listen("tcp", "192.168.43.215:20000")
+	listener, err := net.Listen("tcp", "192.168.0.101:20000")
 	//Il faut modifier l'adresse
 	if err != nil {
 		fmt.Println("Error:", err)

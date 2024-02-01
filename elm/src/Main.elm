@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html, text, button, div)
-import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (Decoder, field, string, list)
 import Http
@@ -63,14 +62,8 @@ view model =
         [ button [ onClick RequestRandomWord ] [ text "选择一个词" ]
         , div [] [ text <| Maybe.withDefault "没有选择" model.selectedWord ]
         , case model.definition of
-            Just defs -> 
-                div [] 
-                    (div [ style "font-size" "larger", style "font-weight" "bold" ] [ text "Definition" ]
-                     :: List.indexedMap (\index def -> 
-                        div [ style "padding-left" "20px", style "font-size" "smaller" ] 
-                            [ text (String.fromInt (index + 1) ++ ". " ++ def) ]) defs)
-            Nothing -> 
-                div [] [ text "" ]
+            Just defs -> div [] (List.map (\def -> div [] [ text def ]) defs)
+            Nothing -> div [] [ text "" ]
         ]
 
 -- 发送 HTTP 请求获取定义
@@ -86,11 +79,6 @@ definitionDecoder =
     list (field "meanings" (list (field "definitions" (list (field "definition" string)))))
     |> Json.Decode.map (List.concatMap identity)
     |> Json.Decode.map (List.concatMap identity)
-
-
-
-
-
 
 
 
