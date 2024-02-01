@@ -104,7 +104,6 @@ update msg model =
         UpdateUserInput input ->
             let
                 feedback = checkContent input model.selectedWord
-                color = colorForMessage feedback
             in
             ( { model | userInput = input, feedback = feedback }, Cmd.none )
 
