@@ -1,42 +1,71 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, text, button, div)
-import Html.Attributes exposing (style)
-import Html.Events exposing (onClick)
-import Json.Decode exposing (Decoder, field, string, list)
+import Html exposing (Html, text, button, div, input, label, span)
+import Html.Attributes exposing (style, placeholder, type_, checked)
+import Html.Events exposing (onClick, onInput, on, targetChecked)
+import Json.Decode exposing (Decoder, string, list, field)
 import Http
 import Random
 
--- 模型定义
+-- define model
 type alias Model =
     { words : List String
     , selectedWord : Maybe String
     , definition : Maybe (List String)
+    , loadingWords : Bool
+    , userInput : String
+    , feedback : String
+    , showAnswer : Bool
+    , gameStarted : Bool 
     }
 
--- 初始模型
+-- initial model
 initialModel : Model
 initialModel =
-    { words = String.words "a anywhere below burn climb able apartment bend bus close about appear beneath business clothes above approach beside busy cloud accept area best but coat across arm better buy coffee act around between by cold actually arrive beyond call college add art big calm color admit as bird camera come afraid ask bit can company after asleep bite car completely afternoon at black card computer again attack block care confuse against attention blood careful consider age aunt blow carefully continue ago avoid blue carry control agree away board case conversation ahead baby boat cat cool air back body catch cop alive bad bone cause corner all bag book ceiling count allow ball boot center counter almost bank bore certain country alone bar both certainly couple along barely bother chair course already bathroom bottle chance cover also be bottom change crazy although beach box check create always bear boy cheek creature among beat brain chest cross and beautiful branch child crowd angry because break choice cry animal become breast choose cup another bed breath church cut answer bedroom breathe cigarette dad any beer bridge circle dance anybody before bright city dark anymore begin bring class darkness anyone behind brother clean daughter anything believe brown clear day anyway belong building clearly dead death except funny history law decide excite future hit lay deep expect game hold lead desk explain garden hole leaf despite expression gate home lean die extra gather hope learn different eye gently horse leave dinner face get hospital leg direction fact gift hot less dirt fade girl hotel let disappear fail give hour letter discover fall glance house lie distance familiar glass how life do family go however lift doctor far god huge light dog fast gold human like door father good hundred line doorway fear grab hurry lip down feed grandfather hurt listen dozen feel grandmother husband little drag few grass I local draw field gray ice lock dream fight great idea long dress figure green if look drink fill ground ignore lose drive final group image lot driver finally grow imagine loud drop find guard immediately love dry fine guess important low during finger gun in lucky dust finish guy information lunch each fire hair inside machine ear first half instead main early fish hall interest make earth fit hallway into man easily five hand it manage east fix hang itself many easy flash happen jacket map eat flat happy job mark edge flight hard join marriage eff ort floor hardly joke marry egg flower hate jump matter eight fly have just may either follow he keep maybe else food head key me empty foot hear kick mean end for heart kid meet engine force heat kill member enjoy forehead heavy kind memory enough forest hell kiss mention enter forever hello kitchen message entire forget help knee metal especially form her knife middle even forward here knock might event four herself know mind ever free hey lady mine every fresh hi land minute everybody friend hide language mirror everyone from high large miss everything front hill last moment everywhere full him later money exactly fun himself laugh month moon our quickly send smile more out quiet sense smoke morning outside quietly serious snap most over quite seriously snow mostly own radio serve so mother page rain service soft mountain pain raise set softly mouth paint rather settle soldier move pair reach seven somebody movie pale read several somehow much palm ready sex someone music pants real shadow something must paper realize shake sometimes my parent really shape somewhere myself part reason share son name party receive sharp song narrow pass recognize she soon near past red sheet sorry nearly path refuse ship sort neck pause remain shirt soul need pay remember shoe sound neighbor people remind shoot south never perfect remove shop space new perhaps repeat short speak news personal reply should special next phone rest shoulder spend nice photo return shout spin night pick reveal shove spirit no picture rich show spot nobody piece ride shower spread nod pile right shrug spring noise pink ring shut stage none place rise sick stair nor plan river side stand normal plastic road sigh star north plate rock sight stare nose play roll sign start not please roof silence state note pocket room silent station nothing point round silver stay notice police row simple steal now pool rub simply step number poor run since stick nurse pop rush sing still of porch sad single stomach off position safe sir stone offer possible same sister stop office pour sand sit store officer power save situation storm often prepare say six story oh press scared size straight okay pretend scene skin strange old pretty school sky street on probably scream slam stretch once problem screen sleep strike one promise sea slide strong only prove search slightly student onto pull seat slip study open push second slow stuff or put see slowly stupid order question seem small such other quick sell smell suddenly suggest thick tree wash window suit thin trip watch wine summer thing trouble water wing sun think truck wave winter suppose third true way wipe sure thirty trust we wish surface this truth wear with surprise those try wedding within sweet though turn week without swing three twenty weight woman system throat twice well wonder table through two west wood take throw uncle wet wooden talk tie under what word tall time understand whatever work tea tiny unless wheel world teach tire until when worry teacher to up where would team today upon whether wrap tear together use which write television tomorrow usual while wrong tell tone usually whisper yard ten tongue very white yeah terrible tonight view who year than too village whole yell thank tooth visit whom yellow that top voice whose yes the toss wait why yet their touch wake wide you them toward walk wife young themselves town wall wild your then track want will yourself there train war win these travel warm wind"
+    { words = []
     , selectedWord = Nothing
     , definition = Nothing
+    , loadingWords = True
+    , userInput = ""
+    , feedback = ""
+    , showAnswer = False
+    , gameStarted = False 
     }
 
--- 消息类型
+
+-- initial command
+initLoadWordsCmd : Cmd Msg
+initLoadWordsCmd =
+    Http.get
+        { url = "http://localhost:8000/words.txt"
+        , expect = Http.expectString ReceiveWords
+        }
+        |> Cmd.map (\_ -> LoadWords)
+
+-- type of message
 type Msg
     = SelectRandomWord (List Int)
     | RequestRandomWord
     | ReceiveDefinition (Result Http.Error (List String))
+    | LoadWords
+    | ReceiveWords (Result Http.Error String)
+    | UpdateUserInput String
+    | ToggleShowAnswer Bool
+    | StartGame
 
--- 更新函数
+
+-- function to update model
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         RequestRandomWord ->
-            ( model
-            , Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1)))
-            )
+            if List.isEmpty model.words then
+                ( model, Cmd.none )
+            else
+                ( model
+                , Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1)))
+                )
 
         SelectRandomWord indices ->
             let
@@ -44,7 +73,7 @@ update msg model =
                 selected = List.drop index model.words |> List.head
                 cmd = Maybe.map requestDefinition selected |> Maybe.withDefault Cmd.none
             in
-            ( { model | selectedWord = selected, definition = Nothing }
+            ( { model | selectedWord = selected, definition = Nothing, userInput = "", feedback = "" }
             , cmd
             )
 
@@ -54,26 +83,121 @@ update msg model =
                     ( { model | definition = Just defs }, Cmd.none )
 
                 Err _ ->
-                    ( { model | definition = Just ["无法获取定义。"] }, Cmd.none )
+                    ( { model | definition = Just ["Can't get the definition."], feedback = "Can't get the definition." }, Cmd.none )
 
--- 视图函数
+        LoadWords ->
+            ( { model | loadingWords = True }
+            , Http.get
+                { url = "http://localhost:8000/words.txt"
+                , expect = Http.expectString ReceiveWords
+                }
+            )
+
+        ReceiveWords result ->
+            case result of
+                Ok wordString ->
+                    ( { model | words = String.words wordString, loadingWords = False }, Cmd.none )
+
+                Err _ ->
+                    ( { model | words = [], loadingWords = False }, Cmd.none )
+
+        UpdateUserInput input ->
+            let
+                feedback = checkContent input model.selectedWord
+                color = colorForMessage feedback
+            in
+            ( { model | userInput = input, feedback = feedback }, Cmd.none )
+
+        ToggleShowAnswer toggle ->
+            ( { model | showAnswer = toggle }, Cmd.none )
+
+        StartGame ->
+            ( { model | gameStarted = True }, Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1))) )
+            
+
+-- view
 view : Model -> Html Msg
 view model =
     div []
-        [ button [ onClick RequestRandomWord ] [ text "选择一个词" ]
-        , div [] [ text <| Maybe.withDefault "没有选择" model.selectedWord ]
-        , case model.definition of
-            Just defs -> 
-                div [] 
-                    (div [ style "font-size" "larger", style "font-weight" "bold" ] [ text "Definition" ]
-                     :: List.indexedMap (\index def -> 
-                        div [ style "padding-left" "20px", style "font-size" "smaller" ] 
-                            [ text (String.fromInt (index + 1) ++ ". " ++ def) ]) defs)
-            Nothing -> 
-                div [] [ text "" ]
+        [ div [ style "font-size" "36px", style "font-weight" "bold" ]
+            [ if model.showAnswer && model.gameStarted then
+                text <| Maybe.withDefault "Guess it!" model.selectedWord
+              else
+                text "Guess it!"
+            ]
+        , if model.gameStarted then
+            button [ onClick RequestRandomWord, Html.Attributes.disabled model.loadingWords ] [ text "Get a new word to guess!" ]
+          else
+            button [ onClick StartGame ] [ text "Start the Game!" ]
+        , if model.gameStarted then
+            case model.definition of
+                Just defs -> 
+                    div [] 
+                        (div [ style "font-size" "larger", style "font-weight" "bold" ] [ text "Meaning" ]
+                         :: List.indexedMap (\index def -> 
+                            div [ style "padding-left" "20px", style "font-size" "smaller" ] 
+                                [ text (String.fromInt (index + 1) ++ ". " ++ def) ]) defs
+                         ++ [ div [] [ text "" ] ]) -- 定义后空一行
+                Nothing -> 
+                    text ""
+          else
+            text ""
+        , if model.gameStarted then
+            div []
+                [ div [] [ text "Type in to guess" ]
+                , input [ placeholder "", onInput UpdateUserInput ] []
+                , div [ style "color" (colorForMessage model.feedback) ] [ text model.feedback ]
+                , div [] [ text "" ] -- 空一行
+                , label []
+                    [ input [ type_ "checkbox", on "change" checkboxDecoder, checked model.showAnswer ] []
+                    , span [] [ text "show it" ]
+                    ]
+                ]
+          else
+            text ""
+        , if model.loadingWords then
+            div [] [ text "Loading..." ]
+          else
+            div [] []
         ]
 
--- 发送 HTTP 请求获取定义
+
+-- JSON decoder for checkbox
+checkboxDecoder : Decoder Msg
+checkboxDecoder = Json.Decode.map ToggleShowAnswer targetChecked
+
+-- check if content is correct
+checkContent : String -> Maybe String -> String
+checkContent content selectedWord =
+    case selectedWord of
+        Just word ->
+            if content == word then
+                "Yes"
+            else
+                if not (String.isEmpty content) && not (String.isEmpty word) && String.left 1 content == String.left 1 word then
+                    "First letter is correct"
+                else
+                    "No"
+        Nothing ->
+            "No"
+
+-- color for message (green for correct, red for wrong, blue for first letter correct)
+colorForMessage : String -> String
+colorForMessage message =
+    case message of
+        "Yes" ->
+            "green"
+
+        "First letter is correct" ->
+            "blue"
+
+        "No" ->
+            "red"
+
+        _ ->
+            "black"  
+
+-- send HTTP request to get definition
 requestDefinition : String -> Cmd Msg
 requestDefinition word =
     Http.get
@@ -81,6 +205,7 @@ requestDefinition word =
         , expect = Http.expectJson ReceiveDefinition definitionDecoder
         }
 
+-- JSON decoder for definition
 definitionDecoder : Decoder (List String)
 definitionDecoder =
     list (field "meanings" (list (field "definitions" (list (field "definition" string)))))
@@ -89,16 +214,11 @@ definitionDecoder =
 
 
 
-
-
-
-
-
--- 主程序
+-- main program
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> (initialModel, Cmd.none)
+        { init = \_ -> (initialModel, initLoadWordsCmd)
         , update = update
         , view = view
         , subscriptions = \_ -> Sub.none
