@@ -137,7 +137,7 @@ view model =
                          :: List.indexedMap (\index def -> 
                             div [ style "padding-left" "20px", style "font-size" "smaller" ] 
                                 [ text (String.fromInt (index + 1) ++ ". " ++ def) ]) defs
-                         ++ [ div [] [ text "" ] ]) -- 定义后空一行
+                         ++ [ div [] [ text "" ] ]) 
                 Nothing -> 
                     text ""
           else
@@ -147,7 +147,7 @@ view model =
                 [ div [] [ text "Type in to guess" ]
                 , input [ placeholder "", onInput UpdateUserInput ] []
                 , div [ style "color" (colorForMessage model.feedback) ] [ text model.feedback ]
-                , div [] [ text "" ] -- 空一行
+                , div [] [ text "" ]
                 , label []
                     [ input [ type_ "checkbox", on "change" checkboxDecoder, checked model.showAnswer ] []
                     , span [] [ text "show it" ]
