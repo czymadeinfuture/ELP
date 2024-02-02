@@ -83,6 +83,7 @@ const question = (query) => new Promise((resolve) => rl.question(query, resolve)
 class Game {
     constructor(numberOfPlayers) {
         this.initializeGame(numberOfPlayers);
+        this.finish_game = false;
     }
 
     initializeGame(numberOfPlayers) {
@@ -98,30 +99,84 @@ class Game {
             }
         }
     }
-    
+
+    async player_round(playerIndex){
+        console.log(`Player ${playerIndex+1}'s turn start!`);
+        this.printPlayerHand(playerIndex);
+        this.printPlayerGameBoard(playerIndex);
+        await this.playeraction(playerIndex);
+        console.log(`Player ${playerIndex+1}'s turn finish!`);
+    }
+
+    async playeraction(playerIndex){
+        let inputsucess=false;
+        while (!inputsucess) {
+            const input = await question('1: make a new word. 2: change your word from board. 3: end your turn and pass to next player. 4: Do a Jarnac! -- Choose an action:');
+            switch(input) {
+                case '1':
+                    await this.placeWord(playerIndex)
+                    break;
+                case '2':
+                    
+                    await this.changeWord(playerIndex);
+                    break;
+                   
+                case '3':
+                    inputsucess = true;
+                    continue;
+                case '4':
+                    await this.Jarnac(playerIndex);
+                    break;
+                default:
+                    console.log('Invalid Input!');
+                
+                
+            };
+        }
+    }
+
+    async changeWord(playerIndex){
+
+
+    }
+
     async placeWord(playerIndex) {
-        try {
-            const player = this.players[playerIndex];
-            const word = await question('Enter a word/letter from your hand: ');
-            // make sure the letters are in the player's hand
-            if (!this.isWordInHand(word, playerIndex)) {
-                console.log('You do not have these letters in your hand.');
-                return;
+        let isValidWord = false;
+        while (!isValidWord) {
+            try {
+                const player = this.players[playerIndex];
+                const word = await question('Enter a word/letter from your hand: ');
+                
+                // make sure the word has at least three letters
+                if (word.length < 3) {
+                    console.log('The word must be at least 3 letters long.');
+                    continue;
+                }
+
+                // make sure the letters are in the player's hand
+                if (!this.isWordInHand(word, playerIndex)) {
+                    console.log('You do not have these letters in your hand.');
+                    continue;
+                }
+
+                const row = await question('Enter the row number to place the beginning of the word: ');
+                const col = await question('Enter the column number to start the word: ');
+
+                // place the word and show the board
+                player.gameBoard.placeWord(word.toUpperCase().split(''), parseInt(row) - 1, parseInt(col) - 1);
+                player.gameBoard.printBoard();
+
+                this.removeletters(word, playerIndex);
+
+                isValidWord = true; 
+
+            } catch (error) {
+                console.error('An error occurred:', error);
+                isValidWord = false; 
             }
-
-            const row = await question('Enter the row number to place the beginning of the word: ');
-            const col = await question('Enter the column number to start the word: ');
-
-            // place the word and show the board
-            player.gameBoard.placeWord(word.toUpperCase().split(''), parseInt(row) - 1, parseInt(col) - 1);
-            player.gameBoard.printBoard();
-
-            this.removeletters(word, playerIndex);
-        } catch (error) {
-            console.error('An error occurred:', error);
-        } finally {
             
         }
+        
     }
 
     isWordInHand(word, playerIndex) {
@@ -155,6 +210,10 @@ class Game {
         }
     }
 
+    async Jarnac(){
+
+    }
+
 
     getPlayerHand(playerIndex) {
         return this.players[playerIndex].hand;
@@ -184,7 +243,25 @@ class Game {
         }
     }
 
-    async run() {
+    is_game_finished(){
+        
+    }
+
+    async run(){
+        
+        
+        await this.player_round(0);
+            //this.calculate_point();
+            
+        this.is_game_finished();
+        rl.close()
+            
+                
+            
+        
+    }
+
+    /*async run() {
         // Display initial hands
        
         this.printPlayerHand(0);
@@ -197,7 +274,7 @@ class Game {
         rl.close();
 
         
-    }
+    }*/
 }
 
 
