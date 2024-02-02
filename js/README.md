@@ -1,5 +1,5 @@
 # Nom du Projet
-ELM: GUESS WORD!
+ELM: GUESS IT!
 
 ## Introduction
 
