@@ -430,11 +430,17 @@ class Game {
     // define the action that the player will play in each round
     async player_round(playerIndex){
         console.log(`Player ${playerIndex+1}'s turn start!`);
+        // draw letter for each player after each of them has played one turn
+        if (this.roundsCompleted.every(round => round > 0)) {
+            this.drawLetter(playerIndex);
+        }
+
         this.printPlayerHand(playerIndex);
         this.printPlayerGameBoard(playerIndex);
         await this.playeraction(playerIndex);
         console.log(`Player ${playerIndex+1}'s turn finish!\n`);
         this.roundsCompleted[playerIndex] += 1;
+        this.isGameFinished();
     }
 
 
