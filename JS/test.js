@@ -46,7 +46,7 @@ class GameBoard {
     // 假设word是一个字符串数组，wordIndex是单词开始的列索引
     placeWord(word, row, wordIndex = 0) {
         if (wordIndex + word.length > this.columns) {
-            throw new Error('单词超出游戏板范围');
+            throw new Error('The word is out of range of the board');
         }
         for (let i = 0; i < word.length; i++) {
             this.board[row][wordIndex + i] = word[i];
@@ -100,29 +100,31 @@ class Game {
         }
     }
 
+    // define the action that the player will play in each round
     async player_round(playerIndex){
         console.log(`Player ${playerIndex+1}'s turn start!`);
         this.printPlayerHand(playerIndex);
         this.printPlayerGameBoard(playerIndex);
         await this.playeraction(playerIndex);
+        // await this.exchangeletters(playerIndex);
         console.log(`Player ${playerIndex+1}'s turn finish!`);
     }
 
     async playeraction(playerIndex){
-        let inputsucess=false;
-        while (!inputsucess) {
-            const input = await question('1: make a new word. 2: change your word from board. 3: end your turn and pass to next player. 4: Do a Jarnac! -- Choose an action:');
+        let isValidInput=false;
+        while (!isValidInput) {
+            console.log('\n1: Make a new word(3 letters at least).\n2: Change your word from board.\n3: End your turn and pass to next player.\n4: Do a Jarnac!');
+            const input = await question('-- Choose an action (input a number from 1-4): ');
             switch(input) {
                 case '1':
                     await this.placeWord(playerIndex)
                     break;
                 case '2':
-                    
                     await this.changeWord(playerIndex);
                     break;
                    
                 case '3':
-                    inputsucess = true;
+                    isValidInput = true;
                     continue;
                 case '4':
                     await this.Jarnac(playerIndex);
@@ -135,21 +137,91 @@ class Game {
         }
     }
 
-    async changeWord(playerIndex){
+    async changeWord(playerIndex) {
+        let isValidInput = false;
 
+        // detect whether the board is empty
+        let isBoardEmpty = true;
+        for (const row of this.players[playerIndex].gameBoard.board) {
+            if (row.some(cell => cell.trim() !== '')) {
+                isBoardEmpty = false;
+                break;
+            }
+        }
 
+        if (isBoardEmpty) {
+            console.log('The board is empty. No words to modify.');
+            return;
+        }
+
+        this.printPlayerHand(playerIndex);
+    
+        while(!isValidInput){
+            // enter a letter from hand
+            const letter = await question('Enter a letter from your hand to add to a word: ');
+            if (!this.isWordInHand(letter, playerIndex) || letter.length !== 1) {
+                console.log('Invalid letter or letter not in hand.');
+                continue;
+            }
+
+            //  enter a row to modify the word
+            let isRowValid = false;
+            
+            while (!isRowValid) {
+                const rowStr = await question('Enter the row number of the word you wish to modify: ');
+                const row = parseInt(rowStr) - 1;
+
+                if (isNaN(row) || row < 0 || row >= this.players[playerIndex].gameBoard.rows) {
+                    console.log('Invalid row number. Please try again.');
+                    continue;
+                } else if (this.players[playerIndex].gameBoard.board[row].every(cell => cell.trim() === '')) {
+                    console.log('The selected row is empty. No word to modify. Please try again.');
+                    continue;
+                } else {
+                    isRowValid = true; 
+                    const originalWord = this.players[playerIndex].gameBoard.board[row].join('').trim();
+                    console.log(`Original word in row ${row + 1}: ${originalWord}`);
+                            
+                    // enter the new word incorporating the chosen letter
+                    let isNewWordValid = false;
+                    while(!isNewWordValid){
+                        const newWord = await question(`Enter a new word incorporating the letter '${letter}': `);
+                        const combinedLetters = originalWord.split('').concat(letter.toUpperCase()).sort().join('');
+                        const sortedNewWord = newWord.toUpperCase().split('').sort().join('');
+                    
+                        if (sortedNewWord !== combinedLetters) {
+                            console.log(`The new word must use exactly the letters from the original word plus the letter '${letter}', please enter again.`);
+                            continue;
+                        }
+                    
+                        this.players[playerIndex].gameBoard.placeWord(newWord.toUpperCase().split(''), row, 0);
+                        this.removeletters(letter, playerIndex);
+                        this.players[playerIndex].gameBoard.printBoard();
+                        this.printPlayerHand(playerIndex);
+                        isNewWordValid = true;
+                    }
+                }
+            }
+            isValidInput = true;    
+        }
+
+            // display the original word in the chosen row
+            
+        
     }
 
     async placeWord(playerIndex) {
         let isValidWord = false;
+        this.printPlayerHand(playerIndex);
+
         while (!isValidWord) {
             try {
                 const player = this.players[playerIndex];
-                const word = await question('Enter a word/letter from your hand: ');
+                const word = await question('Enter a word from your hand: ');
                 
                 // make sure the word has at least three letters
-                if (word.length < 3) {
-                    console.log('The word must be at least 3 letters long.');
+                if (word.length < 3 || word.length > 9) {
+                    console.log('The word must be at least 3 letters long and less than 9 letters. ');
                     continue;
                 }
 
@@ -159,26 +231,39 @@ class Game {
                     continue;
                 }
 
-                const row = await question('Enter the row number to place the beginning of the word: ');
-                const col = await question('Enter the column number to start the word: ');
+                const row = await question('Enter the row number to place the word: ');
+                //const col = await question('Enter the column number to start the word: ');
+
+                // examine the input row and column are in the right range
+                if (parseInt(row) < 1 || parseInt(row) > 7 ) {
+                    console.log('Row numbers must be within the valid range.');
+                    continue;
+                }
+                
+                // examine whether the place where you put down a letter is already ocuupied 
+                if (player.gameBoard.board[parseInt(row) - 1][0] !== '') {
+                    console.log('The selected space is already occupied.');
+                    continue;
+                }
 
                 // place the word and show the board
-                player.gameBoard.placeWord(word.toUpperCase().split(''), parseInt(row) - 1, parseInt(col) - 1);
+                player.gameBoard.placeWord(word.toUpperCase().split(''), parseInt(row) - 1, 0);
                 player.gameBoard.printBoard();
 
                 this.removeletters(word, playerIndex);
-
+                
+                this.printPlayerHand(playerIndex);
                 isValidWord = true; 
 
             } catch (error) {
                 console.error('An error occurred:', error);
-                isValidWord = false; 
             }
             
         }
         
     }
 
+    // examine whether the word is in player's hand
     isWordInHand(word, playerIndex) {
         let handCopy = this.players[playerIndex].hand.slice();
         for (let char of word.toUpperCase()) {
@@ -191,7 +276,8 @@ class Game {
         return true;
     }
 
-    drawCard(playerIndex) {
+    // get a letter from the letter pool
+    drawLetter(playerIndex) {
         try {
             const newLetter = this.letterBag.drawLetter();
             this.players[playerIndex].hand.push(newLetter);
@@ -210,6 +296,29 @@ class Game {
         }
     }
 
+    async exchangeletters(playerIndex) {
+        let isValidInput = false;
+        const player = this.players[playerIndex];
+        console.log(`Player ${playerIndex + 1}'s current hand: ${player.hand.join(', ')}`);
+        
+        while(!isValidInput){
+        // 获取玩家想交换的三张牌
+            const input = await question('Enter three letters you want to exchange( without the space ): ');
+
+            if (input.length === 3 && [...input.toUpperCase()].every(letter => this.isWordInHand(letter, playerIndex))) {
+                [...input.toUpperCase()].forEach(letter => this.removeletters(letter, playerIndex));
+                for (let i = 0; i < 3; i++) {
+                    this.drawCard(playerIndex);
+                }
+                console.log(`Player ${playerIndex + 1}'s new hand: ${player.hand.join(', ')}`);
+                isValidInput = true;
+            } else {
+                console.log('Invalid input or cards not in hand. Please try again.');
+            }
+        } 
+    }
+
+
     async Jarnac(){
 
     }
@@ -224,7 +333,7 @@ class Game {
     }
 
     printPlayerHand(playerIndex) {
-        console.log(`Player ${playerIndex + 1} hand: ${this.getPlayerHand(playerIndex).join(', ')}`);
+        console.log(`Player ${playerIndex + 1} current hand: ${this.getPlayerHand(playerIndex).join(', ')}`);
     }
 
     
@@ -235,8 +344,11 @@ class Game {
         
     }
 
+    is_game_finished(){
+
+    }
     
-    printPlayersWordPool() {
+    /*printPlayersWordPool() {
         for (let i = 0; i < this.players.length; i++) {
             this.printPlayerHand(i);
             this.printPlayerGameBoard(i);
@@ -245,7 +357,7 @@ class Game {
 
     is_game_finished(){
         
-    }
+    }*/
 
     async run(){
         
@@ -253,8 +365,8 @@ class Game {
         await this.player_round(0);
             //this.calculate_point();
             
-        this.is_game_finished();
-        rl.close()
+        //this.exchangeCards(0);
+        rl.close();
             
                 
             
