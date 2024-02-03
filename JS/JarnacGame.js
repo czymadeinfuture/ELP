@@ -36,14 +36,14 @@ class GameBoard {
         this.rows = rows;
         this.columns = columns;
         this.board = this.initializeBoard();
-        this.scores = [9,16,25,36,49,64,81]; // 假设的分数
+        this.scores = [9,16,25,36,49,64,81]; 
     }
 
     initializeBoard() {
         return new Array(this.rows).fill(null).map(() => new Array(this.columns).fill(''));
     }
 
-    // 假设word是一个字符串数组，wordIndex是单词开始的列索引
+    // place the word 
     placeWord(word, row, wordIndex = 0) {
         if (wordIndex + word.length > this.columns) {
             throw new Error('The word is out of range of the board');
@@ -57,9 +57,8 @@ class GameBoard {
         let scoresRow = '        '; 
         this.scores.forEach((score, index) => {
             const scoreStr = score.toString();
-            // 格子宽度是3，分数应该放在格子的中间，所以使用 padStart
             scoresRow += scoreStr.padStart(Math.floor((3 - scoreStr.length) / 2) + 3);
-            scoresRow += ' '; // 分数之间添加3个空格
+            scoresRow += ' '; 
         });
         console.log(scoresRow);
 
@@ -100,7 +99,6 @@ class Game {
             }
         }
     }
-
     
     async playeraction(playerIndex){
         let isValidInput=false;
@@ -321,13 +319,13 @@ class Game {
         const opponentHand = this.players[opponentIndex].hand;
         const opponentBoard = this.players[opponentIndex].gameBoard.board;
     
-        // 检查对手是否有手牌
+        // check whether the opponent has a letter in his hand
         if (opponentHand.length === 0) {
             console.log("Opponent has no letters in hand.");
             return;
         }
     
-        // 检查棋盘上是否有单词
+        // check the existence of the word on the opponent's board
         let boardHasWord = false;
         for (const row of opponentBoard) {
             if (row.some(cell => cell.trim() !== '')) {
@@ -340,28 +338,24 @@ class Game {
             return;
         }
     
-        // 让玩家选择使用对手的哪个字母和棋盘上的哪行单词
         const letter = await question(`Choose a letter from opponent's hand [${opponentHand.join(', ')}]: `);
         const rowStr = await question("Choose the row number of the word you want to modify on the opponent's board: ");
         const row = parseInt(rowStr) - 1;
     
-        // 检查输入的有效性
         if (!opponentHand.includes(letter) || isNaN(row) || row < 0 || row >= this.players[playerIndex].gameBoard.rows) {
             console.log("Invalid input.");
             return;
         }
     
-        // 让玩家输入一个新的单词，包含选定的字母和行中的单词
         const newWord = await question(`Enter a new word incorporating the letter '${letter}' and the word from row ${row + 1}: `);
     
-        // 这里添加更多的检查，确保新单词是有效的
+        // (tbd:more tests for the validation of the input)
         const newrowStr = await question("Choose the row number in which you want to add the new word on your board: ")
         const newrow = parseInt(newrowStr) - 1;
     
-        // 如果一切有效，将新单词放到玩家的棋盘上，并从对手手中移除该字母
         this.players[playerIndex].gameBoard.placeWord(newWord.toUpperCase().split(''),parseInt(newrow) - 1, 0);
         this.players[opponentIndex].gameBoard.removeWordFromRow(row);
-        this.removeletters(letter, opponentIndex); // 从对手手中移除字母
+        this.removeletters(letter, opponentIndex); 
     }
     
     removeWordFromRow(row) {
@@ -389,17 +383,16 @@ class Game {
     }
 
     isGameFinished() {
-        // 遍历每个玩家检查是否满足游戏结束的条件
         for (const player of this.players) {
             let allRowsFilled = true;
-            for (let i = 0; i < 7; i++) { // 检查前7行是否都有单词
+            for (let i = 0; i < 7; i++) { // examine the existence of the words in the first 7 rows
                 if (player.gameBoard.board[i].every(cell => cell.trim() === '')) {
                     allRowsFilled = false;
                     break;
                 }
             }
     
-            // 如果前7行都有单词，并且最后一行也放下了单词，则游戏结束
+            // examine the contidion to win
             if (allRowsFilled && player.gameBoard.board[7].some(cell => cell.trim() !== '')) {
                 this.finish_game = true;
                 console.log(`Game finished. Player ${this.players.indexOf(player) + 1} has filled all rows.`);
@@ -417,7 +410,7 @@ class Game {
             let score = 0;
             player.gameBoard.board.forEach(row => {
                 const word = row.join('').trim();
-                if (word.length > 2) { // 只计算3个字母及以上的单词
+                if (word.length > 2) { 
                     score += word.length ** 2;
                 }
             });
@@ -446,10 +439,10 @@ class Game {
 
 
     async run() {
-        while (!this.finish_game) { // 循环直到游戏结束
+        while (!this.finish_game) { 
             for (let i = 0; i < this.players.length; i++) {
                 await this.player_round(i);
-                if (this.finish_game) break; // 如果游戏结束，跳出循环
+                if (this.finish_game) break; 
             }
         }
         rl.close(); 
