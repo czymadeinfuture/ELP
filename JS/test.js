@@ -3,7 +3,7 @@ class LetterBag {
         this.letters = [];
         for (let ch = 'A'.charCodeAt(0); ch <= 'Z'.charCodeAt(0); ch++) {
             const count = this.getLetterCount(String.fromCharCode(ch));
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < count; i++) {1
                 this.letters.push(String.fromCharCode(ch));
             }
         }
@@ -84,13 +84,14 @@ class Game {
     constructor(numberOfPlayers) {
         this.initializeGame(numberOfPlayers);
         this.finish_game = false;
+        this.roundsCompleted = new Array(numberOfPlayers).fill(0);
     }
 
     initializeGame(numberOfPlayers) {
         this.letterBag = new LetterBag();
         this.players = new Array(numberOfPlayers).fill(null).map(() => ({
             hand: [],
-            gameBoard: new GameBoard(7,9)// 
+            gameBoard: new GameBoard(8,9)// 
         }));
         
         for (let i = 0; i < this.players.length; i++) {
@@ -100,34 +101,34 @@ class Game {
         }
     }
 
-    // define the action that the player will play in each round
-    async player_round(playerIndex){
-        console.log(`Player ${playerIndex+1}'s turn start!`);
-        this.printPlayerHand(playerIndex);
-        this.printPlayerGameBoard(playerIndex);
-        await this.playeraction(playerIndex);
-        // await this.exchangeletters(playerIndex);
-        console.log(`Player ${playerIndex+1}'s turn finish!`);
-    }
-
+    
     async playeraction(playerIndex){
         let isValidInput=false;
         while (!isValidInput) {
             console.log('\n1: Make a new word(3 letters at least).\n2: Change your word from board.\n3: End your turn and pass to next player.\n4: Do a Jarnac!');
-            const input = await question('-- Choose an action (input a number from 1-4): ');
+            if (this.roundsCompleted.every(round => round > 0)) {
+                console.log('5: Exchange three letters.');
+            }
+            const input = await question('-- Choose an action (input a number from the options above): ');
             switch(input) {
                 case '1':
-                    await this.placeWord(playerIndex)
+                    await this.placeWord(playerIndex);
                     break;
                 case '2':
                     await this.changeWord(playerIndex);
                     break;
-                   
                 case '3':
                     isValidInput = true;
                     continue;
                 case '4':
                     await this.Jarnac(playerIndex);
+                    break;
+                case '5':
+                    if (this.roundsCompleted.every(round => round > 0)) {
+                        await this.exchangeletters(playerIndex);
+                    } else {
+                        console.log('Option not available yet.');
+                    }
                     break;
                 default:
                     console.log('Invalid Input!');
@@ -157,13 +158,12 @@ class Game {
         this.printPlayerHand(playerIndex);
     
         while(!isValidInput){
-            // enter a letter from hand
-            const letter = await question('Enter a letter from your hand to add to a word: ');
-            if (!this.isWordInHand(letter, playerIndex) || letter.length !== 1) {
-                console.log('Invalid letter or letter not in hand.');
+            // enter a letter/several letters from hand
+            const letters = await question('Enter a letter or several letters from your hand to add to a word: ');
+            if (!this.isWordInHand(letters, playerIndex)) {
+                console.log('Invalid input or letters not in hand.');
                 continue;
             }
-
             //  enter a row to modify the word
             let isRowValid = false;
             
@@ -185,17 +185,17 @@ class Game {
                     // enter the new word incorporating the chosen letter
                     let isNewWordValid = false;
                     while(!isNewWordValid){
-                        const newWord = await question(`Enter a new word incorporating the letter '${letter}': `);
-                        const combinedLetters = originalWord.split('').concat(letter.toUpperCase()).sort().join('');
+                        const newWord = await question(`Enter a new word incorporating the letter/letters '${letters}': `);
+                        const combinedLetters = originalWord.split('').concat(letters.toUpperCase().split('')).sort().join('');
                         const sortedNewWord = newWord.toUpperCase().split('').sort().join('');
                     
                         if (sortedNewWord !== combinedLetters) {
-                            console.log(`The new word must use exactly the letters from the original word plus the letter '${letter}', please enter again.`);
+                            console.log(`The new word must use exactly the letters from the original word plus the letter/letters '${letters}', please enter again.`);
                             continue;
                         }
                     
                         this.players[playerIndex].gameBoard.placeWord(newWord.toUpperCase().split(''), row, 0);
-                        this.removeletters(letter, playerIndex);
+                        this.removeletters(letters, playerIndex);
                         this.players[playerIndex].gameBoard.printBoard();
                         this.printPlayerHand(playerIndex);
                         isNewWordValid = true;
@@ -204,10 +204,7 @@ class Game {
             }
             isValidInput = true;    
         }
-
-            // display the original word in the chosen row
-            
-        
+        this.drawLetter(playerIndex);
     }
 
     async placeWord(playerIndex) {
@@ -235,7 +232,7 @@ class Game {
                 //const col = await question('Enter the column number to start the word: ');
 
                 // examine the input row and column are in the right range
-                if (parseInt(row) < 1 || parseInt(row) > 7 ) {
+                if (parseInt(row) < 1 || parseInt(row) > 8 ) {
                     console.log('Row numbers must be within the valid range.');
                     continue;
                 }
@@ -257,9 +254,9 @@ class Game {
 
             } catch (error) {
                 console.error('An error occurred:', error);
-            }
-            
+            } 
         }
+        this.drawLetter(playerIndex);
         
     }
 
@@ -319,10 +316,57 @@ class Game {
     }
 
 
-    async Jarnac(){
-
+    async Jarnac(playerIndex) {
+        const opponentIndex = (playerIndex + 1) % 2; // 假设只有两位玩家
+        const opponentHand = this.players[opponentIndex].hand;
+        const opponentBoard = this.players[opponentIndex].gameBoard.board;
+    
+        // 检查对手是否有手牌
+        if (opponentHand.length === 0) {
+            console.log("Opponent has no letters in hand.");
+            return;
+        }
+    
+        // 检查棋盘上是否有单词
+        let boardHasWord = false;
+        for (const row of opponentBoard) {
+            if (row.some(cell => cell.trim() !== '')) {
+                boardHasWord = true;
+                break;
+            }
+        }
+        if (!boardHasWord) {
+            console.log("No words on the opponent's board.");
+            return;
+        }
+    
+        // 让玩家选择使用对手的哪个字母和棋盘上的哪行单词
+        const letter = await question(`Choose a letter from opponent's hand [${opponentHand.join(', ')}]: `);
+        const rowStr = await question("Choose the row number of the word you want to modify on the opponent's board: ");
+        const row = parseInt(rowStr) - 1;
+    
+        // 检查输入的有效性
+        if (!opponentHand.includes(letter) || isNaN(row) || row < 0 || row >= this.players[playerIndex].gameBoard.rows) {
+            console.log("Invalid input.");
+            return;
+        }
+    
+        // 让玩家输入一个新的单词，包含选定的字母和行中的单词
+        const newWord = await question(`Enter a new word incorporating the letter '${letter}' and the word from row ${row + 1}: `);
+    
+        // 这里添加更多的检查，确保新单词是有效的
+        const newrowStr = await question("Choose the row number in which you want to add the new word on your board: ")
+        const newrow = parseInt(newrowStr) - 1;
+    
+        // 如果一切有效，将新单词放到玩家的棋盘上，并从对手手中移除该字母
+        this.players[playerIndex].gameBoard.placeWord(newWord.toUpperCase().split(''),parseInt(newrow) - 1, 0);
+        this.players[opponentIndex].gameBoard.removeWordFromRow(row);
+        this.removeletters(letter, opponentIndex); // 从对手手中移除字母
     }
-
+    
+    removeWordFromRow(row) {
+        this.board[row].fill(''); 
+    }
 
     getPlayerHand(playerIndex) {
         return this.players[playerIndex].hand;
@@ -344,53 +388,76 @@ class Game {
         
     }
 
-    is_game_finished(){
-
-    }
+    isGameFinished() {
+        // 遍历每个玩家检查是否满足游戏结束的条件
+        for (const player of this.players) {
+            let allRowsFilled = true;
+            for (let i = 0; i < 7; i++) { // 检查前7行是否都有单词
+                if (player.gameBoard.board[i].every(cell => cell.trim() === '')) {
+                    allRowsFilled = false;
+                    break;
+                }
+            }
     
-    /*printPlayersWordPool() {
-        for (let i = 0; i < this.players.length; i++) {
-            this.printPlayerHand(i);
-            this.printPlayerGameBoard(i);
+            // 如果前7行都有单词，并且最后一行也放下了单词，则游戏结束
+            if (allRowsFilled && player.gameBoard.board[7].some(cell => cell.trim() !== '')) {
+                this.finish_game = true;
+                console.log(`Game finished. Player ${this.players.indexOf(player) + 1} has filled all rows.`);
+                this.calculateWinner();
+                break;
+            }
         }
     }
-
-    is_game_finished(){
-        
-    }*/
-
-    async run(){
-        
-        
-        await this.player_round(0);
-            //this.calculate_point();
-            
-        //this.exchangeCards(0);
-        rl.close();
-            
-                
-            
-        
+    
+    calculateWinner() {
+        let maxScore = 0;
+        let winnerIndex = null;
+    
+        this.players.forEach((player, index) => {
+            let score = 0;
+            player.gameBoard.board.forEach(row => {
+                const word = row.join('').trim();
+                if (word.length > 2) { // 只计算3个字母及以上的单词
+                    score += word.length ** 2;
+                }
+            });
+    
+            console.log(`Player ${index + 1}'s total score: ${score}`);
+            if (score > maxScore) {
+                maxScore = score;
+                winnerIndex = index;
+            }
+        });
+    
+        console.log(`The winner is Player ${winnerIndex + 1} with ${maxScore} points.`);
     }
 
-    /*async run() {
-        // Display initial hands
-       
-        this.printPlayerHand(0);
-        this.printPlayerGameBoard(0);
-        await this.placeWord(0);
-        this.drawCard(0);
 
-        this.printPlayerHand(0);
-        await this.placeWord(0);
-        rl.close();
+    
+    // define the action that the player will play in each round
+    async player_round(playerIndex){
+        console.log(`Player ${playerIndex+1}'s turn start!`);
+        this.printPlayerHand(playerIndex);
+        this.printPlayerGameBoard(playerIndex);
+        await this.playeraction(playerIndex);
+        console.log(`Player ${playerIndex+1}'s turn finish!\n`);
+        this.roundsCompleted[playerIndex] += 1;
+    }
 
-        
-    }*/
+
+    async run() {
+        while (!this.finish_game) { // 循环直到游戏结束
+            for (let i = 0; i < this.players.length; i++) {
+                await this.player_round(i);
+                if (this.finish_game) break; // 如果游戏结束，跳出循环
+            }
+        }
+        rl.close(); 
+    }
 }
 
 
 (async () => {
     const game = new Game(2);
-    game.run();// 玩家一放置单词
+    game.run();
 })();
