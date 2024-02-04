@@ -6,8 +6,7 @@ Ceci est une implémentation en JavaScript du jeu Jarnac, un jeu de stratégie b
 
 1. Assurez-vous que Node.js est installé sur votre ordinateur. Si ce n'est pas le cas, vous pouvez le télécharger et l'installer depuis le site officiel de [Node.js](https://nodejs.org/).
 2. Téléchargez ce dépôt de code sur votre ordinateur local.
-
-[URL du dépôt de code](https://github.com/czymadeinfuture/ELP/new/main/JS)
+3. Connectez bien avec l'Internet car la détection de la présence de mots nécessite une connexion https://1mot.net
 
 ## Lancement du jeu
 
@@ -21,12 +20,14 @@ node JarnacGame.js
 
 Jarnac est un jeu de stratégie basé sur les mots qui comprend les règles de base suivantes :
 
-- Au début du jeu, chaque joueur tire un certain nombre de lettres d'un sac de lettres.
-- Pendant son tour, un joueur peut choisir de placer un nouveau mot, de modifier un mot existant, de modifier un mot d'un adversaire, d'échanger des lettres ou de terminer son tour.
+- Au début du jeu, chaque joueur tire 6 lettres d'un sac de lettres.
+- Pendant son tour, un joueur peut choisir de placer un nouveau mot, de modifier un mot existant, de modifier et d'obtenir un mot d'un adversaire(jarnac), d'échanger 3 lettres(depuis le second tour) ou de terminer son tour.
 - Chaque mot doit comporter au moins 3 lettres.
 - Les joueurs doivent placer ou modifier des mots sur le plateau de jeu, qui est une grille de taille spécifique.
 - L'objectif du jeu est de former des mots valides sur le plateau de jeu et d'obtenir le score le plus élevé en plaçant stratégiquement des mots.
-- Le jeu se termine lorsqu'un joueur a rempli les sept premières lignes de son plateau de jeu avec des mots valides.
+- Le jeu se termine lorsqu'un joueur a rempli les sept premières lignes de son plateau de jeu avec des mots valides et a mis un mot sur la dernière ligne. Quand il termine son tour et pass vers le joueur suivant, le jeu se termine. Le joueur avec un score plus élevé gagne le jeu.
+
+Hint: Réfléchissez bien avant chaque action! C'est important pour ne pas bloquer le jeu !
 
 Pour mieux comprendre le jeu, vous pouvez savoir plus par ce lien: 
 [Règles du jeu](https://github.com/sfrenot/javascript/blob/master/projet2/RegleJarnac.pdf)
