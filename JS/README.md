@@ -28,8 +28,8 @@ Jarnac est un jeu de stratégie basé sur les mots qui comprend les règles de b
 - L'objectif du jeu est de former des mots valides sur le plateau de jeu et d'obtenir le score le plus élevé en plaçant stratégiquement des mots.
 - Le jeu se termine lorsqu'un joueur a rempli les sept premières lignes de son plateau de jeu avec des mots valides et a mis un mot sur la dernière ligne. Quand il termine son tour et pass vers le joueur suivant, le jeu se termine. Le joueur avec un score plus élevé gagne le jeu.
 
-Hint: 
-- Réfléchissez bien avant chaque action! C'est important pour ne pas bloquer le jeu!
+Hint : 
+- Réfléchissez bien avant chaque action! C'est le chose important pour ne pas bloquer le jeu!
 - Suivez les instructions à chaque étape de la saisie. Il est préférable de saisir les mots en majuscules et sans espace.
 - Bien que les instructions soient en anglais, les mots saisis doivent être des mots français.
 
