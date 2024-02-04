@@ -303,7 +303,7 @@ class Game {
             if (input.length === 3 && [...input.toUpperCase()].every(letter => this.isWordInHand(letter, playerIndex))) {
                 [...input.toUpperCase()].forEach(letter => this.removeletters(letter, playerIndex));
                 for (let i = 0; i < 3; i++) {
-                    this.drawCard(playerIndex);
+                    this.drawLetter(playerIndex);
                 }
                 console.log(`Player ${playerIndex + 1}'s new hand: ${player.hand.join(', ')}`);
                 isValidInput = true;
