@@ -1,38 +1,59 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, text, button, div, input, label, span)
+import Html exposing (Html, text, button, div, input, label, span, ul, li)
 import Html.Attributes exposing (style, placeholder, type_, checked)
-import Html.Events exposing (onClick, onInput, on, targetChecked)
-import Json.Decode exposing (Decoder, string, list, field)
+import Html.Events exposing (onClick, onInput, on)
+import Json.Decode exposing (Decoder, string, list, field, map2)
 import Http
 import Random
 
--- define model
+
+-- Define the structure for meanings, including the part of speech and definitions
+type alias Meaning =
+    { partOfSpeech : String
+    , definitions : List String
+    }
+
+-- Define the model
 type alias Model =
     { words : List String
     , selectedWord : Maybe String
-    , definition : Maybe (List String)
+    , meanings : Maybe (List Meaning)
     , loadingWords : Bool
     , userInput : String
     , feedback : String
     , showAnswer : Bool
-    , gameStarted : Bool 
+    , gameStarted : Bool
+    , motDevines : List String
+    , correctMessage : Bool
     }
 
--- initial model
+-- Initial model
 initialModel : Model
 initialModel =
     { words = []
     , selectedWord = Nothing
-    , definition = Nothing
+    , meanings = Nothing
     , loadingWords = True
     , userInput = ""
     , feedback = ""
     , showAnswer = False
-    , gameStarted = False 
+    , gameStarted = False
+    , motDevines = ["", "", "", "", "", "", "", "", "", ""]
+    , correctMessage = False
     }
 
+-- Type of messages
+type Msg
+    = SelectRandomWord (List Int)
+    | RequestRandomWord
+    | ReceiveDefinition (Result Http.Error (List Meaning))
+    | LoadWords
+    | ReceiveWords (Result Http.Error String)
+    | UpdateUserInput String
+    | ToggleShowAnswer Bool
+    | StartGame
 
 -- initial command
 initLoadWordsCmd : Cmd Msg
@@ -42,79 +63,67 @@ initLoadWordsCmd =
         , expect = Http.expectString ReceiveWords
         }
         |> Cmd.map (\_ -> LoadWords)
-
--- type of message
-type Msg
-    = SelectRandomWord (List Int)
-    | RequestRandomWord
-    | ReceiveDefinition (Result Http.Error (List String))
-    | LoadWords
-    | ReceiveWords (Result Http.Error String)
-    | UpdateUserInput String
-    | ToggleShowAnswer Bool
-    | StartGame
-
-
--- function to update model
+        
+-- Function to update model
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         RequestRandomWord ->
             if List.isEmpty model.words then
-                ( model, Cmd.none )
+                (model, Cmd.none)
             else
-                ( model
-                , Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1)))
-                )
+                let
+                    _ = Debug.log "Generating new random word" ()
+                in
+                (model, Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1))))
 
         SelectRandomWord indices ->
             let
                 index = List.head indices |> Maybe.withDefault 0
                 selected = List.drop index model.words |> List.head
+                _ = Debug.log "Selected index" index
+                _ = Debug.log "Selected word" selected
                 cmd = Maybe.map requestDefinition selected |> Maybe.withDefault Cmd.none
             in
-            ( { model | selectedWord = selected, definition = Nothing, userInput = "", feedback = "" }
-            , cmd
-            )
+            ({ model | selectedWord = selected, meanings = Nothing, userInput = "", feedback = "" }, cmd)
 
         ReceiveDefinition result ->
             case result of
-                Ok defs ->
-                    ( { model | definition = Just defs }, Cmd.none )
-
-                Err _ ->
-                    ( { model | definition = Just ["Can't get the definition."], feedback = "Can't get the definition." }, Cmd.none )
+                Ok meanings ->
+                    let
+                        _ = Debug.log "Received meanings" meanings
+                    in
+                    ({ model | meanings = Just meanings }, Cmd.none)
+                Err error ->
+                    let
+                        _ = Debug.log "Error loading definitions" error
+                    in
+                    ({ model | feedback = "Failed to load definitions.", meanings = Nothing }, Cmd.none)
 
         LoadWords ->
-            ( { model | loadingWords = True }
-            , Http.get
-                { url = "http://localhost:8000/words.txt"
-                , expect = Http.expectString ReceiveWords
-                }
-            )
+            ({ model | loadingWords = True }, Http.get { url = "http://localhost:8000/words.txt", expect = Http.expectString ReceiveWords })
 
         ReceiveWords result ->
             case result of
                 Ok wordString ->
-                    ( { model | words = String.words wordString, loadingWords = False }, Cmd.none )
+                    ({ model | words = String.words wordString, loadingWords = False }, Cmd.none)
 
                 Err _ ->
-                    ( { model | words = [], loadingWords = False }, Cmd.none )
+                    ({ model | words = [], loadingWords = False }, Cmd.none)
 
         UpdateUserInput input ->
             let
                 feedback = checkContent input model.selectedWord
             in
-            ( { model | userInput = input, feedback = feedback }, Cmd.none )
+            ({ model | userInput = input, feedback = feedback }, Cmd.none)
 
         ToggleShowAnswer toggle ->
-            ( { model | showAnswer = toggle }, Cmd.none )
+            ({ model | showAnswer = toggle }, Cmd.none)
 
         StartGame ->
-            ( { model | gameStarted = True }, Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1))) )
-            
+            ({ model | gameStarted = True }, Random.generate SelectRandomWord (Random.map List.singleton (Random.int 0 (List.length model.words - 1))))
 
--- view
+-- View function
 view : Model -> Html Msg
 view model =
     div []
@@ -125,35 +134,38 @@ view model =
                 text "Guess it!"
             ]
         , if model.gameStarted then
-            button [ onClick RequestRandomWord, Html.Attributes.disabled model.loadingWords ] [ text "Get a new word to guess!" ]
-          else
-            button [ onClick StartGame ] [ text "Start the Game!" ]
-        , if model.gameStarted then
-            case model.definition of
-                Just defs -> 
-                    div [] 
-                        (div [ style "font-size" "larger", style "font-weight" "bold" ] [ text "Meaning" ]
-                         :: List.indexedMap (\index def -> 
-                            div [ style "padding-left" "20px", style "font-size" "smaller" ] 
-                                [ text (String.fromInt (index + 1) ++ ". " ++ def) ]) defs
-                         ++ [ div [] [ text "" ] ]) 
-                Nothing -> 
-                    text ""
-          else
-            text ""
-        , if model.gameStarted then
             div []
-                [ div [] [ text "Type in to guess" ]
-                , input [ placeholder "", onInput UpdateUserInput ] []
-                , div [ style "color" (colorForMessage model.feedback) ] [ text model.feedback ]
-                , div [] [ text "" ]
-                , label []
-                    [ input [ type_ "checkbox", on "change" checkboxDecoder, checked model.showAnswer ] []
-                    , span [] [ text "show it" ]
-                    ]
+                [ button [ onClick RequestRandomWord, Html.Attributes.disabled model.loadingWords ] [ text "Get a new word to guess!" ]
+                , case model.meanings of
+                    Just meanings ->
+                        div []
+                            [ div [] [ text "Type in to guess" ]
+                            , input [ placeholder "", onInput UpdateUserInput ] []
+                            , div [ style "color" (colorForMessage model.feedback) ] [ text model.feedback ]
+                            , div [] [ text "" ]
+                            , label []
+                                [ input [ type_ "checkbox", on "change" checkboxDecoder, checked model.showAnswer ] []
+                                , span [] [ text "Show the answer" ]
+                                ]
+                            , div [] [ text "————————————————————————————————————————————————————————————————————————————————" ]
+                            , div []
+                                [ div [] [ text "Meaning:" ]
+                                , div [ style "font-size" "15px" ] (List.concatMap viewMeaning meanings)
+                                , div [ style "position" "fixed", style "width" "20%", style "top" "10%", style "left" "70%", style "border-left" "1px solid #ccc", style "padding" "10px" ]
+                                    (List.map (\word -> div [] [ text word ]) model.motDevines)
+                                , if model.correctMessage then
+                                    div [ style "position" "fixed", style "top" "10%", style "left" "40%", style "transform" "translate(-50%, -50%)"
+                                        , style "font-size" "40px", style "text-align" "center", style "color" "green" ]
+                                        [ text "CORRECT" ]
+                                  else
+                                    div [] []
+                                ]
+                            ]
+                    Nothing ->
+                        text "No definitions available."
                 ]
           else
-            text ""
+            button [ onClick StartGame ] [ text "Start the Game!" ]
         , if model.loadingWords then
             div [] [ text "Loading..." ]
           else
@@ -161,11 +173,28 @@ view model =
         ]
 
 
+viewMeaning : Meaning -> List (Html Msg)
+viewMeaning meaning =
+    [ div [style "width" "60%", style "float" "left", style "margin-left" "5%" ] [ text (meaning.partOfSpeech) ]
+    , ul [] (List.indexedMap viewDefinition meaning.definitions)
+    ]
+
+viewDefinition : Int -> String -> Html Msg
+viewDefinition index definition =
+    div [style "width" "60%", style "float" "left", style "margin-left" "5%" ]
+        [ li [] [ text (definition) ] ]
+
 -- JSON decoder for checkbox
 checkboxDecoder : Decoder Msg
-checkboxDecoder = Json.Decode.map ToggleShowAnswer targetChecked
+checkboxDecoder =
+    Json.Decode.map ToggleShowAnswer targetChecked
 
--- check if content is correct
+-- Helper decoder to extract the "checked" value from an event target
+targetChecked : Decoder Bool
+targetChecked =
+    Json.Decode.field "target" (Json.Decode.field "checked" Json.Decode.bool)
+
+-- Check if content is correct
 checkContent : String -> Maybe String -> String
 checkContent content selectedWord =
     case selectedWord of
@@ -180,23 +209,28 @@ checkContent content selectedWord =
         Nothing ->
             "No"
 
--- color for message (green for correct, red for wrong, blue for first letter correct)
+-- Color for message
 colorForMessage : String -> String
 colorForMessage message =
     case message of
-        "Yes" ->
-            "green"
+        "Yes" -> "green"
+        "First letter is correct" -> "blue"
+        "No" -> "red"
+        _ -> "black"
 
-        "First letter is correct" ->
-            "blue"
+-- Send HTTP request to get definitiondefinitionDecoder : Decoder Definition
+-- Decoder for a single definition
+definitionDecoder : Decoder (List Meaning)
+definitionDecoder =
+    field "0" (field "meanings" (list meaningDecoder))
 
-        "No" ->
-            "red"
+meaningDecoder : Decoder Meaning
+meaningDecoder =
+    map2 Meaning
+        (field "partOfSpeech" string)
+        (field "definitions" (list (field "definition" string)))
 
-        _ ->
-            "black"  
-
--- send HTTP request to get definition
+-- HTTP request function for word definitions
 requestDefinition : String -> Cmd Msg
 requestDefinition word =
     Http.get
@@ -204,20 +238,15 @@ requestDefinition word =
         , expect = Http.expectJson ReceiveDefinition definitionDecoder
         }
 
--- JSON decoder for definition
-definitionDecoder : Decoder (List String)
-definitionDecoder =
-    list (field "meanings" (list (field "definitions" (list (field "definition" string)))))
-    |> Json.Decode.map (List.concatMap identity)
-    |> Json.Decode.map (List.concatMap identity)
-
-
-
--- main program
+init : () -> (Model, Cmd Msg)
+init _ =
+    (initialModel, initLoadWordsCmd)
+    
+-- Main program
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> (initialModel, initLoadWordsCmd)
+        { init = init
         , update = update
         , view = view
         , subscriptions = \_ -> Sub.none
