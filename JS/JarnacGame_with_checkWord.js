@@ -1,3 +1,4 @@
+// define the basic elements of the letters
 class LetterBag {
     constructor() {
         this.letters = [];
@@ -10,11 +11,13 @@ class LetterBag {
         this.shuffleLetters();
     }
 
+    //letter poop for all the letters
     getLetterCount(letter) {
         const counts = { 'A': 14, 'B': 4, 'C': 7, 'D': 5, 'E': 19, 'F': 2, 'G': 4, 'H': 2, 'I': 11, 'J': 1, 'K': 1, 'L': 6, 'M': 5, 'N': 9, 'O': 8, 'P': 4, 'Q': 1, 'R': 10, 'S': 7, 'T': 9, 'U': 8, 'V': 2, 'W': 1, 'X': 1, 'Y': 1, 'Z': 2 };
         return counts[letter] || 0;
     }
 
+    //put all the letters in a random sequence
     shuffleLetters() {
         for (let i = this.letters.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -22,6 +25,7 @@ class LetterBag {
         }
     }
 
+    //draw a letter from the letter pool
     drawLetter() {
         if (this.letters.length > 0) {
             return this.letters.shift();
@@ -31,6 +35,7 @@ class LetterBag {
     }
 }
 
+//define the basic conditions for the gameboard
 class GameBoard {
     constructor(rows, columns) { 
         this.rows = rows;
@@ -43,6 +48,7 @@ class GameBoard {
         return new Array(this.rows).fill(null).map(() => new Array(this.columns).fill(''));
     }
 
+    // put the word on the word
     placeWord(word, row, wordIndex = 0) {
         if (wordIndex + word.length > this.columns) {
             throw new Error('The word is out of range of the board');
@@ -52,10 +58,12 @@ class GameBoard {
         }
     }
 
+    // remove the word from a certain row
     removeWordFromRow(row) {
         this.board[row].fill(''); 
     }
 
+    // print the game board information
     printBoard() {
         let scoresRow = '        '; 
         this.scores.forEach((score, index) => {
@@ -73,6 +81,7 @@ class GameBoard {
     }
 }
 
+// create a readline for the following functions 
 const readline = require('readline');
 const rl = readline.createInterface({
     input: process.stdin,
@@ -80,8 +89,8 @@ const rl = readline.createInterface({
 });
 const question = (query) => new Promise((resolve) => rl.question(query, resolve));
 
+//define a function to check the existence of the word via 1mot.net
 const axios = require('axios');
-
 async function checkWord(word) {
   const upperWord = word.toUpperCase(); 
   const lowerWord = word.toLowerCase(); 
@@ -102,14 +111,14 @@ async function checkWord(word) {
 }
 
 
-
+// define the main core of the game, contains the logic, the judgement etc
 class Game {
     constructor(numberOfPlayers) {
         this.initializeGame(numberOfPlayers);
         this.finish_game = false;
         this.roundsCompleted = new Array(numberOfPlayers).fill(0);
     }
-
+    // init all the basic elements
     initializeGame(numberOfPlayers) {
         this.letterBag = new LetterBag();
         this.players = new Array(numberOfPlayers).fill(null).map(() => ({
@@ -124,6 +133,7 @@ class Game {
         }
     }
     
+    //define all possible types of action
     async playeraction(playerIndex){
         let isValidInput=false;
         while (!isValidInput) {
@@ -154,12 +164,11 @@ class Game {
                     break;
                 default:
                     console.log('Invalid Input!');
-                
-                
             };
         }
     }
 
+    // define a function to fulfil the action: add one or a few letters to a word which has already existed
     async changeWord(playerIndex) {
         let isValidInput = false;
 
@@ -235,6 +244,7 @@ class Game {
         }  
     }
 
+    // define a function to place a new word on the game board
     async placeWord(playerIndex) {
         let isValidWord = false;
         this.printPlayerHand(playerIndex);
@@ -317,6 +327,7 @@ class Game {
         }
     }
 
+    //remove the used letters from player's hand
     removeletters(word, playerIndex) {
         for (let letter of word.toUpperCase()) {
             const index = this.players[playerIndex].hand.indexOf(letter);
@@ -326,6 +337,7 @@ class Game {
         }
     }
 
+    // define a fonction which allows player to change 3 lettters from the letter bag
     async exchangeletters(playerIndex) {
         let isValidInput = false;
         const player = this.players[playerIndex];
@@ -347,12 +359,13 @@ class Game {
         } 
     }
 
-
+    // define an action:jarnac. use the letters in another player's hand to steal a word from another player's board which is changeable but not noticed
     async Jarnac(playerIndex) {
         const opponentIndex = (playerIndex + 1) % 2; 
         const opponentHand = this.players[opponentIndex].hand;
         const opponentBoard = this.players[opponentIndex].gameBoard.board;
     
+        // check whether another player's hand and game board are empty
         if (opponentHand.length === 0) {
             console.log("Opponent has no letters in hand.");
             return;
@@ -369,13 +382,14 @@ class Game {
             console.log("No words on the opponent's board.");
             return;
         }
-        
+        // choose a letter from another player's hand
         const letter = await question(`Choose a letter from opponent's hand [${opponentHand.join(', ')}]: `);
         if (!this.isWordInHand(letter, opponentIndex)) {
             console.log(`The letter ${letter} is not in the opponent's hand.`);
             return;
         }   
           
+        // choose a word you want to edit from another player's board
         const rowStr = await question("Choose the row number of the word you want to modify on the opponent's board: ");
         const row = parseInt(rowStr) - 1;
         if (isNaN(row) || row < 0 || row >= this.players[opponentIndex].gameBoard.rows) {
@@ -392,7 +406,7 @@ class Game {
             
         console.log(`Word in the selected row on the opponent's board: ${wordInRow}`);
             
-       
+        // enter a new word and steal it to your board
         const newWord = await question(`Enter a new word incorporating the letter '${letter}' and the word from row ${row + 1}: `);
         const requiredLetters = wordInRow.split('').concat(letter.toUpperCase().split(''));
         const isWordValid = requiredLetters.every(letter => newWord.toUpperCase().includes(letter));
@@ -402,10 +416,10 @@ class Game {
             return;
         }
 
-        //const newWordIsValid = checkWord(newWord);
-        //if (!newWordIsValid) {
-        //    return; 
-        //}
+        const newWordIsValid = await checkWord(newWord);
+        if (!newWordIsValid) {
+            return; 
+        }
         
         const newrowStr = await question("Choose the row number in which you want to add the new word on your board: ")
         const newrow = parseInt(newrowStr) - 1;
@@ -416,8 +430,9 @@ class Game {
         }
         
         // examine whether the place where you put down a letter is already ocuupied 
-        if (player.gameBoard.board[parseInt(newrow)][0] !== '') {
-            console.log('The selected space is already occupied.');
+        const rowContent = this.players[playerIndex].gameBoard.board[newrow].join('').trim();
+        if (rowContent) {
+            console.log('The selected row already contains a word. Please choose another row.');
             return;
         }
     
@@ -448,18 +463,18 @@ class Game {
         
     }
 
+    // check the conditon for ending the game
     isGameFinished() {
-        // 遍历每个玩家检查是否满足游戏结束的条件
         for (const player of this.players) {
             let allRowsFilled = true;
-            for (let i = 0; i < 7; i++) { // 检查前7行是否都有单词
+            for (let i = 0; i < 7; i++) { // 
                 if (player.gameBoard.board[i].every(cell => cell.trim() === '')) {
                     allRowsFilled = false;
                     break;
                 }
             }
     
-            // 如果前7行都有单词，并且最后一行也放下了单词，则游戏结束
+            // if there are words which has existed in the first 7 rows, and put a new word in the last row, the game ends
             if (allRowsFilled && player.gameBoard.board[7].some(cell => cell.trim() !== '')) {
                 this.finish_game = true;
                 console.log(`Game finished. Player ${this.players.indexOf(player) + 1} has filled all rows.`);
@@ -469,6 +484,7 @@ class Game {
         }
     }
     
+    // calculate the scores, and judge who gonna win the game with comparing the score
     calculateWinner() {
         let maxScore = 0;
         let winnerIndex = null;
@@ -510,7 +526,7 @@ class Game {
         this.isGameFinished();
     }
 
-
+    // define a function to run the main programme
     async run() {
         while (!this.finish_game) { 
             for (let i = 0; i < this.players.length; i++) {
@@ -522,7 +538,7 @@ class Game {
     }
 }
 
-
+// create the players and run the game
 (async () => {
     const game = new Game(2);
     game.run();
