@@ -36,14 +36,13 @@ class GameBoard {
         this.rows = rows;
         this.columns = columns;
         this.board = this.initializeBoard();
-        this.scores = [9,16,25,36,49,64,81]; // 假设的分数
+        this.scores = [9,16,25,36,49,64,81]; 
     }
 
     initializeBoard() {
         return new Array(this.rows).fill(null).map(() => new Array(this.columns).fill(''));
     }
 
-    // 假设word是一个字符串数组，wordIndex是单词开始的列索引
     placeWord(word, row, wordIndex = 0) {
         if (wordIndex + word.length > this.columns) {
             throw new Error('The word is out of range of the board');
@@ -61,9 +60,8 @@ class GameBoard {
         let scoresRow = '        '; 
         this.scores.forEach((score, index) => {
             const scoreStr = score.toString();
-            // 格子宽度是3，分数应该放在格子的中间，所以使用 padStart
             scoresRow += scoreStr.padStart(Math.floor((3 - scoreStr.length) / 2) + 3);
-            scoresRow += ' '; // 分数之间添加3个空格
+            scoresRow += ' '; 
         });
         console.log(scoresRow);
 
@@ -339,7 +337,7 @@ class Game {
             if (input.length === 3 && [...input.toUpperCase()].every(letter => this.isWordInHand(letter, playerIndex))) {
                 [...input.toUpperCase()].forEach(letter => this.removeletters(letter, playerIndex));
                 for (let i = 0; i < 3; i++) {
-                    this.drawCard(playerIndex);
+                    this.drawLetter(playerIndex);
                 }
                 console.log(`Player ${playerIndex + 1}'s new hand: ${player.hand.join(', ')}`);
                 isValidInput = true;
