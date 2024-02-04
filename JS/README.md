@@ -22,6 +22,7 @@ Jarnac est un jeu de stratégie basé sur les mots qui comprend les règles de b
 
 - Au début du jeu, chaque joueur tire 6 lettres d'un sac de lettres.
 - Pendant son tour, un joueur peut choisir de placer un nouveau mot, de modifier un mot existant, de modifier et d'obtenir un mot d'un adversaire(jarnac), d'échanger 3 lettres(depuis le second tour) ou de terminer son tour.
+- À chaque tour, le joueur obtient régulièrement une lettre.
 - Chaque mot doit comporter au moins 3 lettres.
 - Les joueurs doivent placer ou modifier des mots sur le plateau de jeu, qui est une grille de taille spécifique.
 - L'objectif du jeu est de former des mots valides sur le plateau de jeu et d'obtenir le score le plus élevé en plaçant stratégiquement des mots.
