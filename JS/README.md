@@ -6,7 +6,7 @@ Ceci est une implémentation en JavaScript du jeu Jarnac, un jeu de stratégie b
 
 1. Assurez-vous que Node.js est installé sur votre ordinateur. Si ce n'est pas le cas, vous pouvez le télécharger et l'installer depuis le site officiel de [Node.js](https://nodejs.org/).
 2. Téléchargez ce dépôt de code sur votre ordinateur local.
-3. Connectez bien avec l'Internet car la détection de la présence de mots nécessite une connexion https://1mot.net
+3. Connectez bien avec l'Internet car la détection de la présence de mots nécessite une connexion avec le site https://1mot.net
 
 ## Lancement du jeu
 
